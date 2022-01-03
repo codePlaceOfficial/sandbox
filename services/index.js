@@ -191,7 +191,6 @@ let runners = new Runners(total);
 /**
  * 进行初始化
  */
-
 module.exports.runCode = (code, image, fileName, cmds) => {
     return new Promise((resolve, reject) => {
 
@@ -200,7 +199,6 @@ module.exports.runCode = (code, image, fileName, cmds) => {
                 for (let cmd of cmds) {
                     let data = await runExec(container, cmd, `/usr/src/app/${dirname}`);
                     if (data) {
-                        // console.log(container.id);
                         deleteFile(filePath);
                         container.stop().then()
                         resolve(data);
