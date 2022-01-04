@@ -17,7 +17,6 @@ EOF
 sudo systemctl daemon-reload
 sudo systemctl restart docker
 
-
 ################### 配置用户组 ##########################
 sudo groupadd docker #添加docker用户组
 sudo gpasswd -a $USER docker #将登陆用户加入到docker用户组中
@@ -27,7 +26,6 @@ echo "docker安装成功"
 
 fi
 
-
 # for file in $(ls) # 遍历文件夹
 # do
 # if [ -d $file ]; then # 如果为文件夹
@@ -36,5 +34,5 @@ fi
 # fi
 # done
 
-docker build -t compiler ./$file # 安装dockerFile
+docker pull codeplaceofficial/compiler:0.1 # 安装dockerFile
 

@@ -1,4 +1,4 @@
-const sandbox = require("./index");
+const sandbox = require("../index");
 
 // 测试getCouldUserContainer
 // setTimeout(() => {

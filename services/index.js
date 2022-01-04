@@ -153,7 +153,7 @@ class Runners {
     // 创建一个可以使用的容器
     __createNewRunner() {
         this.now += 1;
-        const runnerImage = "compiler";
+        const runnerImage = "codeplaceofficial/compiler:0.1";
         return new Promise((resolve, reject) => {
             const opt = {
                 Image: runnerImage,
@@ -193,7 +193,6 @@ let runners = new Runners(total);
  */
 module.exports.runCode = (code, image, fileName, cmds) => {
     return new Promise((resolve, reject) => {
-
         createCodeFile(code, fileName).then(async ({ filePath, dirname }) => {
             runners.getRunner().then(async container => {
                 for (let cmd of cmds) {
