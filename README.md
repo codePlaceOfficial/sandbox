@@ -4,10 +4,9 @@
 ## quick start
 + clone this repository
 + cd ./docker && sudo sh ./install.sh
-+ cd .. && yarn && node test.js
++ cd .. && yarn && cd ./test && node index.js
 
 ## example
-
 _Compile the NodeJS code_
 ``` javascript
 const sandbox = require("./index");
