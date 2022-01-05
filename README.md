@@ -14,9 +14,9 @@ _Compile the NodeJS code_
 const sandbox = require("./index");
 sandbox.runJs(`console.log("hello,world")`)
 ```
-> More language versions can be found in *[this](./example/runCode)*.
+> More language versions can be found in *[this](./example/runcode)*.
 
-_get Docker Stream_
+_get Docker container's Stream_
 ``` javascript
 sandboxs.getSandbox().then(sandbox => {
         sandbox.getCmdStream().then(stream => {
@@ -31,5 +31,4 @@ sandboxs.getSandbox().then(sandbox => {
     });
 ```
 > A web terminal example built with xterm and socketIO can be found at  *[this](./example/cmdStreamWithXterm)*.
-> ./example/cmdStreamWithXterm
 > ![image](./images/webTerminal.png)
