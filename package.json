@@ -8,16 +8,20 @@
   "scripts": {
     "dev": "nodemon ./index.js",
     "test": "nodemon ./test.js",
-    "debug":"node ./test.js"
+    "debug": "node ./test.js"
   },
   "dependencies": {
     "crypto-random-string": "^3.3.1",
     "dockerode": "^3.2.1"
   },
   "devDependencies": {
-    "nodemon": "^2.0.7"
+    "express": "^4.17.2",
+    "nodemon": "^2.0.7",
+    "socket.io": "^4.4.0"
   },
   "nodemonConfig": {
-    "ignore": ["code/*"]
+    "ignore": [
+      "code/*"
+    ]
   }
 }
