@@ -4,7 +4,7 @@
 ## quick start
 + clone this repository
 + cd ./docker && sudo sh ./install.sh
-+ cd .. && yarn && cd ./test && node index.js
++ cd .. && yarn && cd ./test/runcode && node index.js
 
 ## example
 _Compile the NodeJS code_

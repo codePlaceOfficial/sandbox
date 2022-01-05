@@ -6,6 +6,7 @@ const path = require("path");
 const cryptoRandomString = require("crypto-random-string");
 
 const codePath = `${path.join(__dirname, "../")}/code/`
+
 // 创建文件
 function createCodeFile(code, fileName) {
     let dirname = cryptoRandomString({ length: 12 });
@@ -79,21 +80,21 @@ function runExec(container, Cmd, workingDir = null) {
     })
 }
 
-class Runners {
+class Sandboxs {
     // 队列存储需要新容器的请求
     constructor(total) {
         this.now = 0; // 预计的容器数量(包括开始创建但是没有创建完的)
         this.total = total;
-        this.runners = [];
+        this.sandboxs = [];
         this.customers = []; // 存储需要容器的请求
 
-        this.addNewRunner(); // 初始化一下
+        this.addNewSandbox(); // 初始化一下
     }
 
     // 得到一个容器
-    getRunner() {
+    getSandbox() {
         return new Promise((resolve, reject) => {
-            let container = this.getCouldUseRunner(true);
+            let container = this.getCouldUseSandbox(true);
             if (container == null) {
                 // 没有可用容器
                 this.customers.push(resolve);
@@ -102,61 +103,61 @@ class Runners {
                 resolve(container);
             }
             
-            this.addNewRunner();
+            this.addNewSandbox();
         })
     }
 
     // 添加一个容器
-    addRunner(index, container) {
-        this.runners[index] = { container, couldUse: true };
+    addSandbox(index, container) {
+        this.sandboxs[index] = { container, couldUse: true };
     }
 
     // 找到一个无法使用的容器下标
-    getDisabledRunner() {
-        if (this.runners.length < total) return this.runners.length;
-        for (let index in this.runners) {
-            if (this.runners[index].couldUse == false) return index;
+    getDisabledSandbox() {
+        if (this.sandboxs.length < total) return this.sandboxs.length;
+        for (let index in this.sandboxs) {
+            if (this.sandboxs[index].couldUse == false) return index;
         }
         return -1; // 所有容器都可使用
     }
 
     // 找到一个可以使用的容器
-    getCouldUseRunner(useIt = false) {
-        for (let index in this.runners) {
-            if (this.runners[index].couldUse == true) {
-                this.runners[index].couldUse = !useIt; // 如果useIt为true，及用户用这个runner的话，就把runner设为false
-                // console.log(this.runners[index].container);
-                return this.runners[index].container;
+    getCouldUseSandbox(useIt = false) {
+        for (let index in this.sandboxs) {
+            if (this.sandboxs[index].couldUse == true) {
+                this.sandboxs[index].couldUse = !useIt; // 如果useIt为true，及用户用这个sandbox的话，就把sandbox设为false
+                // console.log(this.sandboxs[index].container);
+                return this.sandboxs[index].container;
             }
         }
         return null;
     }
 
     // 创建并添加一个新容器
-    addNewRunner() {
-        if (this.getDisabledRunner() == -1) { // 容器足够
+    addNewSandbox() {
+        if (this.getDisabledSandbox() == -1) { // 容器足够
             return;
         }
         if (this.now < this.total) {
-            this.__createNewRunner().then(container => {
+            this.__createNewSandbox().then(container => {
                 let customer = this.customers.shift();
                 if (customer) { // 有消费者
                     customer(container);
                     this.now -= 1;
                 } else {
-                    this.addRunner(this.getDisabledRunner(), container);
+                    this.addSandbox(this.getDisabledSandbox(), container);
                 }
-                this.addNewRunner();
+                this.addNewSandbox();
             })
         }
     }
     // 创建一个可以使用的容器
-    __createNewRunner() {
+    __createNewSandbox() {
         this.now += 1;
-        const runnerImage = "codeplaceofficial/compiler:0.1";
+        const sandboxImage = "codeplaceofficial/compiler:0.1";
         return new Promise((resolve, reject) => {
             const opt = {
-                Image: runnerImage,
+                Image: sandboxImage,
                 Tty: true,
                 Cmd: ["/bin/bash"],
                 WorkingDir: "/usr/src/app",
@@ -186,7 +187,7 @@ class Runners {
 
 
 const total = 5; // 容器池
-let runners = new Runners(total);
+let sandboxs = new Sandboxs(total);
 
 /**
  * 进行初始化
@@ -194,7 +195,7 @@ let runners = new Runners(total);
 module.exports.runCode = (code, image, fileName, cmds) => {
     return new Promise((resolve, reject) => {
         createCodeFile(code, fileName).then(async ({ filePath, dirname }) => {
-            runners.getRunner().then(async container => {
+            sandboxs.getSandbox().then(async container => {
                 for (let cmd of cmds) {
                     let data = await runExec(container, cmd, `/usr/src/app/${dirname}`);
                     if (data) {

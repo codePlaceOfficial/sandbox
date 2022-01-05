@@ -1,4 +1,4 @@
-const sandbox = require("../index");
+const sandbox = require("../../index");
 
 // 测试getCouldUserContainer
 // setTimeout(() => {
@@ -9,7 +9,7 @@ const sandbox = require("../index");
 //         })
 // }, 5000);
 
-// const server = require("./services/index");
+
 // 压力测试
 for (let i = 0; i <= 15; i++) {
     sandbox.runJs(`
