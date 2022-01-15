@@ -1,20 +1,7 @@
-const sandbox = require("../../index");
-// 压力测试
-for (let i = 0; i <= 15; i++) {
-    sandbox.runJs(`
-    console.log("hello. I am ${i}")
-`).then(res => {
-        console.log(res)
-    })
-}
+const {SandboxManager} = require("../services/sandbox")
+const sandboxManager = new SandboxManager(3);
+sandboxManager.createSandbox().then(sandbox => {
+    sandboxManager.deleteSandbox(sandbox.id);
+}).catch(console.log)
 
-
-// 测试getCouldUserContainer
-// setTimeout(() => {
-//     sandbox.runJs(`
-//         console.log("hello. I am 2")
-//     `).then(res => {
-//             console.log(res)
-//         })
-// }, 5000);
 
