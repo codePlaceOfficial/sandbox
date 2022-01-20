@@ -134,23 +134,41 @@ class SandboxManager {
         return new Promise((resolve, reject) => {
             if (this.count <= this.limit) {
                 let dirName = cryptoRandomString({ length: 14 });
-                let sbWorkPath = path.join(this.workPath, dirName)
-                fs.mkdir(sbWorkPath, (err) => {
-                    if (err) reject("IO系统出错")
-                    this.__createNewSandbox().then(sandbox => {
-                        let id = uuid()
-                        this.sandboxs[id] = {
-                            container:sandbox,
-                            sbWorkPath
-                        }; // sandbox 索引记录
-                        this.count++;
-                        resolve({
-                            id,
-                            container:sandbox
-                        })
-                    }).catch(() => { reject("创建失败"); this.count-- })
-                })
 
+                // let sbWorkPath = path.join(this.workPath, dirName)
+
+                // temp
+                let sbWorkPath = path.join(`${path.join(__dirname, "../")}code/`, "test")
+
+                // temp
+                // fs.mkdir(sbWorkPath, (err) => {
+                //     if (err) reject("IO系统出错")
+                //     this.__createNewSandbox().then(sandbox => {
+                //         let id = uuid()
+                //         this.sandboxs[id] = {
+                //             container:sandbox,
+                //             sbWorkPath
+                //         }; // sandbox 索引记录
+                //         this.count++;
+                //         resolve({
+                //             id,
+                //             container:sandbox
+                //         })
+                //     }).catch(() => { reject("创建失败"); this.count-- })
+                // })
+                this.__createNewSandbox(sbWorkPath).then(sandbox => {
+                    let id = uuid()
+                    this.sandboxs[id] = {
+                        container: sandbox,
+                        sbWorkPath
+                    }; // sandbox 索引记录
+                    this.count++;
+                    resolve({
+                        id,
+                        container: sandbox,
+                        workPath:sbWorkPath
+                    })
+                }).catch(() => { reject("创建失败"); this.count-- })
             } else {
                 reject("容器数量达到上限")
             }
@@ -168,8 +186,10 @@ class SandboxManager {
         if (sandbox) {
             // console.log(sandbox)
             sandbox.container.kill()
-            deleteDir(sandbox.sbWorkPath)
+            // temp
+            // deleteDir(sandbox.sbWorkPath)
             this.count--;
+            console.log(this.count);
         }
     }
 
