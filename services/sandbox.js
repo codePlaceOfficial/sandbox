@@ -162,7 +162,6 @@ class SandboxManager {
                         container: sandbox,
                         sbWorkPath
                     }; // sandbox 索引记录
-                    this.count++;
                     resolve({
                         id,
                         container: sandbox,
