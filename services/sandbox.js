@@ -6,22 +6,7 @@ const path = require("path");
 const { v4: uuid } = require('uuid');
 const cryptoRandomString = require("crypto-random-string");
 
-// 删除文件夹及其下所有文件
-function deleteDir(path) {
-    let files = [];
-    if (fs.existsSync(path)) {
-        files = fs.readdirSync(path);
-        files.forEach((file, index) => {
-            let curPath = path + "/" + file;
-            if (fs.statSync(curPath).isDirectory()) {
-                deleteFile(curPath); //递归删除文件夹
-            } else {
-                fs.unlinkSync(curPath); //删除文件
-            }
-        });
-        fs.rmdirSync(path);
-    }
-}
+
 
 class __snadbox {
     // 通过Docker的Container实例构建
@@ -64,7 +49,7 @@ class __snadbox {
     /**
      * 获得CMD stream 流
      */
-    getCmdStream(workPath="/usr/src/app") {
+    getCmdStream(workPath = "/usr/src/app") {
         return new Promise((resolve, reject) => {
             let opt = {
                 'AttachStdout': true,
@@ -118,42 +103,40 @@ class __snadbox {
 
 // 容器管理者
 class SandboxManager {
-    constructor(limit, workPath) {
+    constructor(limit) {
         this.limit = limit; // 容器上限
         this.count = 0; // 已存在的容器数量
         this.sandboxs = {}
-        this.workPath = workPath || `${path.join(__dirname, "../")}code/`
+        // this.workSpace = workSpace || `${path.join(__dirname, "../")}code/`
     }
 
     // 创建容器
-    createSandbox() {
+    createSandbox(workPath) {
         this.count++;
         return new Promise((resolve, reject) => {
             if (this.count <= this.limit) {
-                let dirName = cryptoRandomString({ length: 14 });
-
-                let sbWorkPath = path.join(this.workPath, dirName)
-
+                // let dirName = cryptoRandomString({ length: 14 });
+                let sbWorkPath = workPath;
                 // temp
                 // let sbWorkPath = path.join(`${path.join(__dirname, "../")}code/`, "test")
+                // let state = fs.statSync(sbWorkPath);
+                // if (!state.isDirectory()) {
+                //     fs.mkdirSync(sbWorkPath);
+                // }
+                this.__createNewSandbox(sbWorkPath).then(sandbox => {
 
-
-                fs.mkdir(sbWorkPath, (err) => {
-                    if (err) reject("IO系统出错")
-                    this.__createNewSandbox(sbWorkPath).then(sandbox => {
-                        let id = uuid()
-                        this.sandboxs[id] = {
-                            container: sandbox,
-                            sbWorkPath
-                        }; // sandbox 索引记录
-                        this.count++;
-                        resolve({
-                            id,
-                            container: sandbox,
-                            workPath: sbWorkPath
-                        })
-                    }).catch(() => { reject("创建失败"); this.count-- })
-                })
+                    let id = uuid()
+                    this.sandboxs[id] = {
+                        container: sandbox,
+                        workPath: sbWorkPath
+                    }; // sandbox 索引记录
+                    this.count++;
+                    resolve({
+                        id,
+                        container: sandbox,
+                        workPath: sbWorkPath
+                    })
+                }).catch(() => { reject("创建失败"); this.count-- })
                 // temp
                 // this.__createNewSandbox(sbWorkPath).then(sandbox => {
                 //     let id = uuid()
@@ -184,7 +167,6 @@ class SandboxManager {
         if (sandbox) {
             // console.log(sandbox)
             sandbox.container.kill()
-            deleteDir(sandbox.sbWorkPath)
             this.count--;
             // console.log(this.count);
         }
