@@ -33,9 +33,8 @@ class __snadbox {
      * 运行CMD命令，并获得返回结果
      * @param container
      */
-    runExec(Cmd, workingDir = null) {
+    runExec(Cmd, workingDir = "/usr/src/app") {
         return new Promise((resolve, reject) => {
-
             var options = {
                 Cmd,
                 AttachStdout: true,
@@ -43,7 +42,6 @@ class __snadbox {
             };
 
             if (workingDir) options.WorkingDir = workingDir;
-
             this.container.exec(options, (err, exec) => {
                 var infoStream = new stream.PassThrough();
                 let info = "";
@@ -58,7 +56,6 @@ class __snadbox {
                         // info = info.trim();
                         resolve(info);
                     })
-
                 });
             });
         })
@@ -67,14 +64,14 @@ class __snadbox {
     /**
      * 获得CMD stream 流
      */
-    getCmdStream() {
+    getCmdStream(workPath="/usr/src/app") {
         return new Promise((resolve, reject) => {
             let opt = {
                 'AttachStdout': true,
                 'AttachStderr': true,
                 'AttachStdin': true,
                 'Tty': true,
-                workingDir: "/",
+                workingDir: workPath,
                 Cmd: ['/bin/sh'],
             };
             this.container.exec(opt, (err, exec) => {
@@ -135,39 +132,41 @@ class SandboxManager {
             if (this.count <= this.limit) {
                 let dirName = cryptoRandomString({ length: 14 });
 
-                // let sbWorkPath = path.join(this.workPath, dirName)
+                let sbWorkPath = path.join(this.workPath, dirName)
 
                 // temp
-                let sbWorkPath = path.join(`${path.join(__dirname, "../")}code/`, "test")
+                // let sbWorkPath = path.join(`${path.join(__dirname, "../")}code/`, "test")
 
+
+                fs.mkdir(sbWorkPath, (err) => {
+                    if (err) reject("IO系统出错")
+                    this.__createNewSandbox(sbWorkPath).then(sandbox => {
+                        let id = uuid()
+                        this.sandboxs[id] = {
+                            container: sandbox,
+                            sbWorkPath
+                        }; // sandbox 索引记录
+                        this.count++;
+                        resolve({
+                            id,
+                            container: sandbox,
+                            workPath: sbWorkPath
+                        })
+                    }).catch(() => { reject("创建失败"); this.count-- })
+                })
                 // temp
-                // fs.mkdir(sbWorkPath, (err) => {
-                //     if (err) reject("IO系统出错")
-                //     this.__createNewSandbox().then(sandbox => {
-                //         let id = uuid()
-                //         this.sandboxs[id] = {
-                //             container:sandbox,
-                //             sbWorkPath
-                //         }; // sandbox 索引记录
-                //         this.count++;
-                //         resolve({
-                //             id,
-                //             container:sandbox
-                //         })
-                //     }).catch(() => { reject("创建失败"); this.count-- })
-                // })
-                this.__createNewSandbox(sbWorkPath).then(sandbox => {
-                    let id = uuid()
-                    this.sandboxs[id] = {
-                        container: sandbox,
-                        sbWorkPath
-                    }; // sandbox 索引记录
-                    resolve({
-                        id,
-                        container: sandbox,
-                        workPath:sbWorkPath
-                    })
-                }).catch(() => { reject("创建失败"); this.count-- })
+                // this.__createNewSandbox(sbWorkPath).then(sandbox => {
+                //     let id = uuid()
+                //     this.sandboxs[id] = {
+                //         container: sandbox,
+                //         sbWorkPath
+                //     }; // sandbox 索引记录
+                //     resolve({
+                //         id,
+                //         container: sandbox,
+                //         workPath: sbWorkPath
+                //     })
+                // }).catch(() => { reject("创建失败"); this.count-- })
             } else {
                 reject("容器数量达到上限")
             }
@@ -185,10 +184,9 @@ class SandboxManager {
         if (sandbox) {
             // console.log(sandbox)
             sandbox.container.kill()
-            // temp
-            // deleteDir(sandbox.sbWorkPath)
+            deleteDir(sandbox.sbWorkPath)
             this.count--;
-            console.log(this.count);
+            // console.log(this.count);
         }
     }
 
