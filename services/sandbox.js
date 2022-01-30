@@ -1,10 +1,7 @@
 var Docker = require('dockerode');
 var stream = require('stream');
 var docker = new Docker();
-const fs = require("fs");
-const path = require("path");
 const { v4: uuid } = require('uuid');
-const cryptoRandomString = require("crypto-random-string");
 
 
 
@@ -23,7 +20,7 @@ class __snadbox {
             var options = {
                 Cmd,
                 AttachStdout: true,
-                AttachStderr: true
+                AttachStderr: true,
             };
 
             if (workingDir) options.WorkingDir = workingDir;
@@ -31,14 +28,14 @@ class __snadbox {
                 var infoStream = new stream.PassThrough();
                 let info = "";
                 infoStream.on("data", chunk => {
-                    info += chunk.toString('utf8')
+                    let str = chunk.toString('utf8');
+                    info += str.substring(0,str.length-1)
                 })
                 if (err) reject(err);
                 exec.start((err, stream) => {
                     if (err) reject(err);
                     this.container.modem.demuxStream(stream, infoStream, infoStream);
                     stream.on("end", () => {
-                        // info = info.trim();
                         resolve(info);
                     })
                 });
@@ -57,7 +54,7 @@ class __snadbox {
                 'AttachStdin': true,
                 'Tty': true,
                 workingDir: workPath,
-                Cmd: ['/bin/sh'],
+                Cmd: ['/bin/zsh'],
             };
             this.container.exec(opt, (err, exec) => {
                 let options = {
@@ -115,15 +112,9 @@ class SandboxManager {
         this.count++;
         return new Promise((resolve, reject) => {
             if (this.count <= this.limit) {
-                // let dirName = cryptoRandomString({ length: 14 });
                 let sbWorkPath = workPath;
-                // temp
-                // let sbWorkPath = path.join(`${path.join(__dirname, "../")}code/`, "test")
-                // let state = fs.statSync(sbWorkPath);
-                // if (!state.isDirectory()) {
-                //     fs.mkdirSync(sbWorkPath);
-                // }
                 this.__createNewSandbox(sbWorkPath).then(sandbox => {
+                    console.log(sbWorkPath);
 
                     let id = uuid()
                     this.sandboxs[id] = {
@@ -137,19 +128,6 @@ class SandboxManager {
                         workPath: sbWorkPath
                     })
                 }).catch(() => { reject("创建失败"); this.count-- })
-                // temp
-                // this.__createNewSandbox(sbWorkPath).then(sandbox => {
-                //     let id = uuid()
-                //     this.sandboxs[id] = {
-                //         container: sandbox,
-                //         sbWorkPath
-                //     }; // sandbox 索引记录
-                //     resolve({
-                //         id,
-                //         container: sandbox,
-                //         workPath: sbWorkPath
-                //     })
-                // }).catch(() => { reject("创建失败"); this.count-- })
             } else {
                 reject("容器数量达到上限")
             }
@@ -175,12 +153,12 @@ class SandboxManager {
     // 创建一个可以使用的容器
     __createNewSandbox(workDirPath) {
         this.now += 1;
-        const sandboxImage = "codeplaceofficial/compiler:0.1";
+        const sandboxImage = "codeplaceofficial/compiler:0.2";
         return new Promise((resolve, reject) => {
             const opt = {
                 Image: sandboxImage,
                 Tty: true,
-                Cmd: ["/bin/bash"],
+                Cmd: ["/bin/zsh"],
                 WorkingDir: "/usr/src/app",
                 // AutoRemove: true,
                 HostConfig: {
